@@ -1,0 +1,8 @@
+.env
+.venv-og
+node_modules
+npm-debug.log*
+.git
+.gitignore
+__pycache__
+*.pyc

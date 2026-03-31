@@ -6,10 +6,12 @@
   "description": "A lightweight OpenGradient demo app with Python-SDK-powered chat and Supabase cloud memory.",
   "scripts": {
     "dev": "node --watch --env-file=.env src/server.js",
+    "dev:vercel": "npx.cmd vercel dev",
     "start": "node --env-file=.env src/server.js",
     "check": "node --check src/server.js && node --check src/lib/opengradient.js && node --check src/lib/supabase-memory.js && node --check public/app.js && node --check scripts/ensure-og-approval.mjs && node --check scripts/check-og-wallet.mjs",
     "og:approve": "node --env-file=.env scripts/ensure-og-approval.mjs",
-    "og:wallet": "node --env-file=.env scripts/check-og-wallet.mjs"
+    "og:wallet": "node --env-file=.env scripts/check-og-wallet.mjs",
+    "deploy:vercel": "npx.cmd vercel --prod --yes"
   },
   "engines": {
     "node": ">=22.0.0"

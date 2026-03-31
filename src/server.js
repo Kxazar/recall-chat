@@ -249,6 +249,7 @@ async function handleChat(request, response) {
       settlementType: result.settlementType || config.settlementType,
       memoryStatus,
       userBio: memorySearchResult?.user_bio || "",
+      stats: memorySearchResult?.stats || null,
       insights: memorySearchResult?.insights || [],
       memories: memorySearchResult?.memories || []
     });

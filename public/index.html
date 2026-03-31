@@ -4,109 +4,298 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gradient Recall</title>
+    <meta
+      name="description"
+      content="Gradient Recall is a verified memory workspace powered by OpenGradient, Supabase, and Vercel."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <div class="page-shell">
-      <section class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow">OpenGradient demo</p>
-          <h1>Gradient Recall</h1>
-          <p class="lede">
-            A small local app that sends verified prompts through OpenGradient x402 and keeps cloud memory in
-            Supabase.
-          </p>
-          <div class="hero-badges">
-            <span>TEE-verified inference</span>
-            <span>Base Sepolia payments</span>
-            <span>Supabase cloud memory</span>
-          </div>
-        </div>
-        <div class="status-card">
-          <div class="status-row">
-            <span>Model</span>
-            <strong id="modelValue">Loading...</strong>
-          </div>
-          <div class="status-row">
-            <span>Settlement</span>
-            <strong id="settlementValue">Loading...</strong>
-          </div>
-          <div class="status-row">
-            <span>x402 wallet</span>
-            <strong id="walletStatus">Checking...</strong>
-          </div>
-          <div class="status-row">
-            <span>Supabase</span>
-            <strong id="memoryStatus">Checking...</strong>
-          </div>
-          <p class="hint" id="setupHint">
-            Add your keys to <code>.env</code>, then refresh this page.
-          </p>
-        </div>
-      </section>
+    <div class="aurora aurora-left"></div>
+    <div class="aurora aurora-right"></div>
 
-      <main class="workspace">
-        <section class="panel panel-chat">
-          <div class="panel-head">
+    <div class="site-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <p class="eyebrow">OpenGradient x Supabase x Vercel</p>
+          <div class="brand-row">
+            <span class="brand-mark"></span>
             <div>
-              <p class="panel-label">Conversation</p>
-              <h2>Verified assistant</h2>
+              <h1>Gradient Recall</h1>
+              <p class="brand-subtitle">Verified memory infrastructure with a cinematic operator console.</p>
             </div>
-            <p class="thread-chip" id="threadChip">Thread: pending</p>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <div class="micro-badge">
+            <span class="badge-label">Runtime</span>
+            <strong id="runtimeValue">Loading</strong>
+          </div>
+          <div class="micro-badge">
+            <span class="badge-label">Wallet</span>
+            <strong id="walletBadgeValue">Checking</strong>
+          </div>
+        </div>
+      </header>
+
+      <section class="hero-mast">
+        <article class="hero-card">
+          <p class="eyebrow">Signal Deck</p>
+          <h2>Give your assistant a memory spine, not just a chat box.</h2>
+          <p class="hero-copy">
+            Gradient Recall turns the OpenGradient demo into a full operating surface: verified inference, cloud
+            memory, launch diagnostics, and a deployment-ready Vercel shape that feels like a product instead of a
+            throwaway playground.
+          </p>
+
+          <div class="hero-pill-row">
+            <span class="hero-pill">TEE-signed chat</span>
+            <span class="hero-pill">Supabase memory atlas</span>
+            <span class="hero-pill">Vercel-ready API surface</span>
           </div>
 
-          <div class="chat-log" id="chatLog">
-            <article class="message message-assistant">
-              <p class="message-role">assistant</p>
-              <p>
-                Ask something about a project, product idea, or your current work. If Supabase memory is configured, I
-                will pull relevant saved context into the answer.
-              </p>
+          <div class="hero-grid">
+            <div class="hero-metric">
+              <span>Model</span>
+              <strong id="modelValue">Loading...</strong>
+            </div>
+            <div class="hero-metric">
+              <span>Settlement</span>
+              <strong id="settlementValue">Loading...</strong>
+            </div>
+            <div class="hero-metric">
+              <span>Memory</span>
+              <strong id="memoryStatus">Checking...</strong>
+            </div>
+            <div class="hero-metric">
+              <span>OPG</span>
+              <strong id="walletStatus">Checking...</strong>
+            </div>
+          </div>
+        </article>
+
+        <aside class="status-card">
+          <div class="status-head">
+            <div>
+              <p class="eyebrow">System Readiness</p>
+              <h3 id="readinessTitle">Preparing</h3>
+            </div>
+            <span class="thread-chip" id="threadChip">Thread: pending</span>
+          </div>
+
+          <p class="status-copy" id="setupHint">
+            Add your environment variables, then refresh. Wallet, memory, and deploy readiness will appear here.
+          </p>
+
+          <div class="status-stack" id="statusStack">
+            <article class="status-tile">
+              <span>Wallet diagnostics</span>
+              <strong>Loading...</strong>
+            </article>
+            <article class="status-tile">
+              <span>Cloud recall</span>
+              <strong>Loading...</strong>
+            </article>
+            <article class="status-tile">
+              <span>Vercel route shape</span>
+              <strong>Static + API</strong>
             </article>
           </div>
+        </aside>
+      </section>
 
-          <form class="composer" id="composer">
-            <label class="sr-only" for="promptInput">Your message</label>
-            <textarea
-              id="promptInput"
-              name="message"
-              rows="4"
-              placeholder="For example: Help me design a launch plan for my privacy-focused AI writing tool."
-            ></textarea>
-            <div class="composer-row">
-              <p class="composer-note" id="composerNote">Ready when you are.</p>
-              <button id="sendButton" type="submit">Send</button>
-            </div>
-          </form>
+      <nav class="tab-bar" aria-label="Gradient Recall sections">
+        <button class="tab-trigger is-active" type="button" data-tab="overview" aria-selected="true">Overview</button>
+        <button class="tab-trigger" type="button" data-tab="studio" aria-selected="false">Studio</button>
+        <button class="tab-trigger" type="button" data-tab="atlas" aria-selected="false">Memory Atlas</button>
+        <button class="tab-trigger" type="button" data-tab="launch" aria-selected="false">Launch</button>
+      </nav>
+
+      <main class="tab-stage">
+        <section class="tab-panel is-active" data-panel="overview">
+          <div class="panel-grid panel-grid-overview">
+            <article class="feature-card statement-card">
+              <p class="eyebrow">Why It Feels Different</p>
+              <h3>Designed like an operator desk, not a starter template.</h3>
+              <p>
+                The interface is intentionally split into signal layers: a narrative overview, a live studio, a memory
+                atlas, and a launch runbook. Each tab has a job, and each job is grounded in the actual runtime state
+                of the app.
+              </p>
+            </article>
+
+            <article class="feature-card telemetry-card">
+              <p class="eyebrow">Telemetry</p>
+              <h3>Current runtime pulse</h3>
+              <div class="metric-cluster" id="overviewMetrics"></div>
+            </article>
+
+            <article class="feature-card architecture-card">
+              <p class="eyebrow">Flow</p>
+              <h3>How a request moves through the stack</h3>
+              <div class="architecture-flow">
+                <div class="flow-node">
+                  <span>1</span>
+                  <strong>Frontend Studio</strong>
+                  <p>Tabs, chat console, and deploy runbook share one surface.</p>
+                </div>
+                <div class="flow-node">
+                  <span>2</span>
+                  <strong>Memory Recall</strong>
+                  <p>Recent context is ranked from Supabase before every answer.</p>
+                </div>
+                <div class="flow-node">
+                  <span>3</span>
+                  <strong>TEE Inference</strong>
+                  <p>OpenGradient signs the response through the Python SDK runtime.</p>
+                </div>
+                <div class="flow-node">
+                  <span>4</span>
+                  <strong>Launch Surface</strong>
+                  <p>Vercel-ready endpoints mirror the same chat, profile, and config contract.</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="feature-card prompt-card">
+              <p class="eyebrow">Scene Switch</p>
+              <h3>Sample prompts for the studio</h3>
+              <div class="prompt-list">
+                <button class="prompt-chip" type="button" data-prompt="Map a launch narrative for a security-focused AI product with a small founder team.">
+                  Launch Narrative
+                </button>
+                <button class="prompt-chip" type="button" data-prompt="Turn this product into a three-act landing page structure with clearer proof and sharper messaging.">
+                  Landing Page Structure
+                </button>
+                <button class="prompt-chip" type="button" data-prompt="What does the memory layer currently know about me, and what would you store next to improve future replies?">
+                  Memory Audit
+                </button>
+              </div>
+            </article>
+          </div>
         </section>
 
-        <aside class="panel panel-memory">
-          <div class="panel-head">
-            <div>
-              <p class="panel-label">Memory</p>
-              <h2>Cloud memory</h2>
-            </div>
+        <section class="tab-panel" data-panel="studio" hidden>
+          <div class="panel-grid panel-grid-studio">
+            <section class="console-card">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Live Studio</p>
+                  <h3>Verified assistant console</h3>
+                </div>
+                <span class="panel-tag" id="studioModeTag">Operator mode</span>
+              </div>
+
+              <div class="chat-log" id="chatLog">
+                <article class="message message-assistant">
+                  <p class="message-role">assistant</p>
+                  <p>
+                    Ask about product strategy, launch sequencing, memory quality, or deployment steps. The studio will
+                    pull live context from Supabase and route verified inference through OpenGradient.
+                  </p>
+                </article>
+              </div>
+
+              <form class="composer" id="composer">
+                <label class="sr-only" for="promptInput">Your message</label>
+                <textarea
+                  id="promptInput"
+                  name="message"
+                  rows="5"
+                  placeholder="Try: Build me a sharper hero section and a launch proof ladder for this product."
+                ></textarea>
+                <div class="composer-row">
+                  <p class="composer-note" id="composerNote">Ready when you are.</p>
+                  <button id="sendButton" type="submit">Transmit</button>
+                </div>
+              </form>
+            </section>
+
+            <aside class="studio-rail">
+              <article class="feature-card rail-card">
+                <p class="eyebrow">Context Layer</p>
+                <h3>Recent recall</h3>
+                <div class="mini-stack" id="railMemoryPreview"></div>
+              </article>
+
+              <article class="feature-card rail-card">
+                <p class="eyebrow">Studio Notes</p>
+                <h3>Current thread posture</h3>
+                <ul class="detail-list" id="studioDetails">
+                  <li>Waiting for runtime data.</li>
+                </ul>
+              </article>
+            </aside>
           </div>
+        </section>
 
-          <section class="memory-block">
-            <h3>Memory summary</h3>
-            <p id="userBio">Supabase memory summary not loaded yet.</p>
-          </section>
+        <section class="tab-panel" data-panel="atlas" hidden>
+          <div class="panel-grid panel-grid-atlas">
+            <article class="feature-card atlas-summary-card">
+              <p class="eyebrow">Memory Atlas</p>
+              <h3>Operator profile</h3>
+              <p class="atlas-summary" id="userBio">Supabase memory summary not loaded yet.</p>
+            </article>
 
-          <section class="memory-block">
-            <h3>Cloud insights</h3>
-            <ul id="insightsList" class="token-list">
-              <li>Waiting for profile data.</li>
-            </ul>
-          </section>
+            <article class="feature-card insight-card">
+              <p class="eyebrow">Signals</p>
+              <h3>What the memory layer sees</h3>
+              <div class="insight-grid" id="insightsList"></div>
+            </article>
 
-          <section class="memory-block">
-            <h3>Latest recalled context</h3>
-            <ul id="memoryList" class="memory-list">
-              <li>No memory search has been run yet.</li>
-            </ul>
-          </section>
-        </aside>
+            <article class="feature-card memory-card">
+              <p class="eyebrow">Timeline</p>
+              <h3>Latest recalled context</h3>
+              <div class="memory-stream" id="memoryList"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="tab-panel" data-panel="launch" hidden>
+          <div class="panel-grid panel-grid-launch">
+            <article class="feature-card launch-card">
+              <p class="eyebrow">Launch Checklist</p>
+              <h3>Deployment posture for Vercel</h3>
+              <div class="checklist" id="launchChecklist"></div>
+            </article>
+
+            <article class="feature-card launch-card">
+              <p class="eyebrow">Routes</p>
+              <h3>API shape shipped with the site</h3>
+              <div class="endpoint-list" id="endpointList"></div>
+            </article>
+
+            <article class="feature-card launch-card">
+              <p class="eyebrow">Runbook</p>
+              <h3>Commands you can use next</h3>
+              <div class="command-stack">
+                <div class="command-card">
+                  <span>Local dev</span>
+                  <code>npm.cmd run dev</code>
+                </div>
+                <div class="command-card">
+                  <span>Wallet check</span>
+                  <code>npm.cmd run og:wallet</code>
+                </div>
+                <div class="command-card">
+                  <span>Allowance</span>
+                  <code>npm.cmd run og:approve -- 1</code>
+                </div>
+                <div class="command-card">
+                  <span>Vercel deploy</span>
+                  <code>npx.cmd vercel --prod --yes</code>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
       </main>
     </div>
 

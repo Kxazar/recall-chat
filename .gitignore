@@ -4,3 +4,4 @@ npm-debug.log*
 .venv-og/
 __pycache__/
 .pytest_cache/
+.vercel/

@@ -44,17 +44,25 @@ function buildProfile(rows, totalCount, userId) {
   const threadCount = new Set(rows.map((row) => row.thread_id).filter(Boolean)).size;
   const userRows = rows.filter((row) => row.role === "user");
   const latestActivity = rows[0]?.created_at || "";
+  const latestUserNote = userRows[0]?.content ? userRows[0].content.slice(0, 96) : "";
+  const stats = {
+    storedMessages: totalCount,
+    threadsSeen: threadCount,
+    latestActivity,
+    latestUserNote
+  };
 
   return {
     user_bio: totalCount
       ? `Cloud memory is enabled for ${userId}. Stored ${totalCount} messages across ${threadCount || 1} thread${threadCount === 1 ? "" : "s"}.`
       : `Cloud memory is enabled for ${userId}, but nothing has been stored yet.`,
+    stats,
     insights: [
       `User ID: ${userId}`,
       `Stored messages: ${totalCount}`,
       `Threads seen: ${threadCount}`,
       `Latest activity: ${formatRelativeTimestamp(latestActivity)}`,
-      userRows[0]?.content ? `Latest user note: ${userRows[0].content.slice(0, 96)}` : "Latest user note: none yet"
+      latestUserNote ? `Latest user note: ${latestUserNote}` : "Latest user note: none yet"
     ]
   };
 }
