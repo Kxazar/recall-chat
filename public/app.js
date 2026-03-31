@@ -10,9 +10,6 @@ const threadChip = document.getElementById("threadChip");
 const identityBadgeValue = document.getElementById("identityBadgeValue");
 const sessionSummary = document.getElementById("sessionSummary");
 const modeBadge = document.getElementById("modeBadge");
-const memoryModeBadge = document.getElementById("memoryModeBadge");
-const memorySummary = document.getElementById("memorySummary");
-const memoryList = document.getElementById("memoryList");
 
 const INITIAL_ASSISTANT_COPY =
   "Start in guest mode any time. Connect a wallet if you want this conversation and its memory lane to stay tied to you.";
@@ -28,25 +25,6 @@ const state = {
   note: "",
   providerAvailable: Boolean(window.ethereum?.request)
 };
-
-function formatTimestamp(timestamp) {
-  if (!timestamp) {
-    return "Just now";
-  }
-
-  const date = new Date(timestamp);
-
-  if (Number.isNaN(date.getTime())) {
-    return timestamp;
-  }
-
-  return date.toLocaleString("en-GB", {
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-}
 
 function shortAddress(address) {
   if (!address) {
@@ -174,59 +152,18 @@ function updateWalletActionButton() {
   walletActionButton.textContent = state.providerAvailable ? "Connect Wallet" : "Wallet App Needed";
 }
 
-function renderMemoryPanel() {
-  const memories = state.profile?.recent_memories || [];
-  const storedTurns = Number(state.profile?.stats?.storedMessages || 0);
-  const defaultSummary = state.session?.isWallet
-    ? "This lane is private to your connected wallet and follows this conversation."
-    : "Guest mode starts instantly. Connect a wallet if you want a private lane tied to you.";
-
+function renderSidebarIdentity() {
   identityBadgeValue.textContent = getSessionLabel();
   modeBadge.textContent = state.session?.isWallet ? "Private memory" : "Guest mode";
-  memoryModeBadge.textContent = state.session?.isWallet ? "Private lane" : "Guest lane";
-
-  sessionSummary.textContent = storedTurns
-    ? `${defaultSummary} It already remembers ${storedTurns} previous turn${storedTurns === 1 ? "" : "s"}.`
-    : defaultSummary;
-
-  const bio = typeof state.profile?.user_bio === "string" ? state.profile.user_bio.trim() : "";
-  memorySummary.textContent = bio || (storedTurns
-    ? "The latest useful pieces of the conversation appear below."
-    : "Useful moments from the conversation will gather here so you can keep the thread without restating yourself.");
-
-  if (!memories.length) {
-    memoryList.innerHTML = `
-      <article class="memory-item is-empty">
-        <p>${
-          state.session?.isWallet
-            ? "Your private lane is ready. Say a few things and it will start holding onto the thread."
-            : "Nothing saved yet. Send a few messages and Recall will start keeping the thread for you."
-        }</p>
-      </article>
-    `;
-    return;
-  }
-
-  memoryList.innerHTML = memories
-    .slice(0, 4)
-    .map(
-      (memory) => `
-        <article class="memory-item">
-          <div class="memory-head">
-            <span>${memory.role === "assistant" ? "Assistant" : "You"}</span>
-            <strong>${formatTimestamp(memory.created_at)}</strong>
-          </div>
-          <p>${memory.content || memory.memory || ""}</p>
-        </article>
-      `
-    )
-    .join("");
+  sessionSummary.textContent = state.session?.isWallet
+    ? "You are in a private lane tied to your connected wallet."
+    : "Start right away in guest mode. Connect a wallet if you want this chat tied to you.";
 }
 
 function renderFromState() {
   updateWalletActionButton();
   renderThread();
-  renderMemoryPanel();
+  renderSidebarIdentity();
 
   promptInput.placeholder = state.session?.isWallet
     ? "Continue the thread. Your private lane will keep the useful context."

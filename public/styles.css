@@ -103,7 +103,6 @@ body::before {
 .chat-stage,
 .chat-panel,
 .prompt-chip,
-.memory-item,
 .message,
 .composer {
   border: 1px solid transparent;
@@ -240,8 +239,7 @@ button[type="submit"]:disabled {
   box-shadow: none;
 }
 
-.prompt-list,
-.memory-list {
+.prompt-list {
   display: grid;
   gap: 12px;
 }
@@ -261,31 +259,6 @@ button[type="submit"]:disabled {
 .prompt-chip:hover {
   background: rgba(255, 255, 255, 0.88);
   border-color: rgba(94, 161, 156, 0.28);
-}
-
-.memory-item {
-  padding: 16px 18px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.5);
-  border-color: rgba(15, 24, 34, 0.08);
-}
-
-.memory-item.is-empty {
-  background: rgba(255, 255, 255, 0.34);
-}
-
-.memory-head {
-  align-items: baseline;
-}
-
-.memory-head strong {
-  font-size: 0.8rem;
-  font-family: var(--mono);
-}
-
-.memory-item p {
-  margin: 8px 0 0;
-  color: var(--ink);
 }
 
 .chat-stage {
