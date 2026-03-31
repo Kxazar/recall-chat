@@ -20,6 +20,11 @@ const state = {
   ready: false
 };
 
+function formatBalance(value, digits = 4) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed.toFixed(digits) : value;
+}
+
 function renderThread() {
   threadChip.textContent = `Thread: ${state.threadId || "new session"}`;
 }
@@ -85,17 +90,29 @@ function setBusy(isBusy) {
 async function loadConfig() {
   const response = await fetch("/api/config");
   const config = await response.json();
+  const wallet = config.walletStatus || null;
+  const opgBalance = Number(wallet?.opgBalance);
+  const lowOpg = Number.isFinite(opgBalance) && opgBalance < 0.1;
+  const walletSummary = wallet
+    ? `${formatBalance(wallet.opgBalance)} OPG and ${formatBalance(wallet.ethBalance, 3)} ETH`
+    : "wallet diagnostics are still loading";
 
   modelValue.textContent = config.model;
   settlementValue.textContent = config.settlementType;
-  walletStatus.textContent = config.hasOpenGradientKey ? "configured" : "missing";
+  walletStatus.textContent = !config.hasOpenGradientKey
+    ? "missing"
+    : wallet
+      ? `${formatBalance(wallet.opgBalance)} OPG`
+      : "configured";
   memoryStatus.textContent = config.hasSupabase ? "configured" : "missing";
 
   state.ready = Boolean(config.hasOpenGradientKey);
   setupHint.textContent = !config.hasOpenGradientKey
     ? "Add OG_PRIVATE_KEY to .env, fund the wallet on Base Sepolia, then refresh."
+    : lowOpg
+      ? `Wallet ${wallet.address} only has ${formatBalance(wallet.opgBalance)} OPG. Top up the faucet balance before chatting.`
     : config.hasSupabase
-      ? `Wallet + cloud memory are ready for ${config.memoryUserId}.`
+      ? `Wallet + cloud memory are ready for ${config.memoryUserId}. Current wallet: ${walletSummary}.`
       : "Add SUPABASE_URL and a server-side Supabase key to enable cloud memory.";
 
   renderThread();
@@ -172,7 +189,7 @@ composer.addEventListener("submit", async (event) => {
   } catch (error) {
     appendMessage("assistant", `Request failed: ${error.message}`);
     state.history.pop();
-    composerNote.textContent = "The request failed. Check your .env values and wallet funding.";
+    composerNote.textContent = error.message;
   } finally {
     setBusy(false);
   }

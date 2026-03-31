@@ -4,7 +4,15 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 
-import { createOpenGradientClient } from "./lib/opengradient.js";
+import {
+  createOpenGradientClient,
+  DEFAULT_OG_RPC_URL,
+  DEFAULT_OPEN_GRADIENT_MODEL,
+  DEFAULT_TEE_REGISTRY_ADDRESS,
+  normalizeOpenGradientModel,
+  normalizeOpenGradientServerUrl,
+  normalizeOpenGradientSettlementType
+} from "./lib/opengradient.js";
 import { createSupabaseMemoryStore } from "./lib/supabase-memory.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,10 +21,13 @@ const publicDir = path.resolve(__dirname, "..", "public");
 
 const config = {
   port: Number(process.env.PORT || 3000),
-  model: process.env.OG_MODEL || "openai/gpt-4o",
+  model: normalizeOpenGradientModel(process.env.OG_MODEL || DEFAULT_OPEN_GRADIENT_MODEL),
   maxTokens: Number(process.env.OG_MAX_TOKENS || 350),
-  settlementType: process.env.OG_SETTLEMENT_TYPE || "individual",
-  apiBaseUrl: process.env.OG_API_BASE_URL || "https://llm.opengradient.ai",
+  settlementType: normalizeOpenGradientSettlementType(process.env.OG_SETTLEMENT_TYPE || "individual"),
+  rpcUrl: process.env.OG_RPC_URL || DEFAULT_OG_RPC_URL,
+  teeRegistryAddress: process.env.OG_TEE_REGISTRY_ADDRESS || DEFAULT_TEE_REGISTRY_ADDRESS,
+  llmServerUrl: normalizeOpenGradientServerUrl(process.env.OG_LLM_SERVER_URL || process.env.OG_API_BASE_URL || ""),
+  pythonExecutable: process.env.OG_PYTHON_EXECUTABLE || "",
   openGradientKey: process.env.OG_PRIVATE_KEY || "",
   supabaseUrl: process.env.SUPABASE_URL || "",
   supabaseKey: process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "",
@@ -32,7 +43,10 @@ const openGradientClient = config.openGradientKey
       model: config.model,
       maxTokens: config.maxTokens,
       settlementType: config.settlementType,
-      baseUrl: config.apiBaseUrl
+      pythonExecutable: config.pythonExecutable,
+      rpcUrl: config.rpcUrl,
+      teeRegistryAddress: config.teeRegistryAddress,
+      llmServerUrl: config.llmServerUrl
     })
   : null;
 
@@ -122,6 +136,35 @@ function buildSystemPrompt(memorySearchResult) {
   ].join("\n");
 }
 
+function parseBalance(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatOpenGradientPaymentError(errorMessage, walletStatus) {
+  if (!walletStatus) {
+    return errorMessage;
+  }
+
+  const opgBalance = parseBalance(walletStatus.opgBalance);
+  const ethBalance = parseBalance(walletStatus.ethBalance);
+  const permit2Allowance = parseBalance(walletStatus.permit2Allowance);
+
+  if (opgBalance !== null && opgBalance < 0.1) {
+    return `OpenGradient payment failed because wallet ${walletStatus.address} only has ${walletStatus.opgBalance} OPG. Top up more OPG from the faucet, then try again.`;
+  }
+
+  if (permit2Allowance !== null && permit2Allowance < 0.1) {
+    return `OpenGradient payment failed because Permit2 allowance is only ${walletStatus.permit2Allowance} OPG. Run npm.cmd run og:approve -- 1, then try again.`;
+  }
+
+  if (ethBalance !== null && ethBalance < 0.001) {
+    return `OpenGradient payment failed because wallet ${walletStatus.address} is low on Base Sepolia ETH (${walletStatus.ethBalance}). Add more gas and try again.`;
+  }
+
+  return `${errorMessage} Wallet diagnostics: ${walletStatus.opgBalance} OPG, ${walletStatus.ethBalance} ETH, allowance ${walletStatus.permit2Allowance} OPG.`;
+}
+
 async function serveStatic(requestPath, response) {
   const relativePath = requestPath === "/" ? "index.html" : requestPath.slice(1);
   const safePath = path.normalize(relativePath).replace(/^(\.\.(\/|\\|$))+/, "");
@@ -205,15 +248,26 @@ async function handleChat(request, response) {
       threadId,
       answer: result.content,
       usage: result.usage,
-      model: config.model,
-      settlementType: config.settlementType,
+      model: result.model || config.model,
+      settlementType: result.settlementType || config.settlementType,
       memoryStatus,
       userBio: memorySearchResult?.user_bio || "",
       insights: memorySearchResult?.insights || [],
       memories: memorySearchResult?.memories || []
     });
   } catch (error) {
-    sendJson(response, 502, { error: error.message });
+    const errorMessage = error.message || "OpenGradient request failed.";
+
+    if (errorMessage.includes("402 Payment Required")) {
+      const walletStatus = await openGradientClient.getWalletStatus().catch(() => null);
+      sendJson(response, 402, {
+        error: formatOpenGradientPaymentError(errorMessage, walletStatus),
+        walletStatus
+      });
+      return;
+    }
+
+    sendJson(response, 502, { error: errorMessage });
   }
 }
 
@@ -253,11 +307,17 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method === "GET" && url.pathname === "/api/config") {
+      const openGradientStatus = openGradientClient ? await openGradientClient.getStatus() : null;
+      const walletStatus = openGradientClient ? await openGradientClient.getWalletStatus().catch(() => null) : null;
+
       sendJson(response, 200, {
         model: config.model,
         settlementType: config.settlementType,
-        apiBaseUrl: config.apiBaseUrl,
+        openGradientRuntime: openGradientStatus?.runtime || "",
+        pythonExecutable: openGradientStatus?.pythonExecutable || "",
+        endpointStrategy: openGradientStatus?.endpointStrategy || "disabled",
         hasOpenGradientKey: Boolean(config.openGradientKey),
+        walletStatus,
         hasSupabase: memoryStore.isConfigured(),
         memoryUserId: memoryStore.getUserId()
       });

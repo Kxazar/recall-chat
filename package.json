@@ -3,19 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "A lightweight OpenGradient demo app with x402-powered chat and Supabase cloud memory.",
+  "description": "A lightweight OpenGradient demo app with Python-SDK-powered chat and Supabase cloud memory.",
   "scripts": {
     "dev": "node --watch --env-file=.env src/server.js",
     "start": "node --env-file=.env src/server.js",
-    "check": "node --check src/server.js && node --check src/lib/opengradient.js && node --check src/lib/supabase-memory.js"
+    "check": "node --check src/server.js && node --check src/lib/opengradient.js && node --check src/lib/supabase-memory.js && node --check public/app.js && node --check scripts/ensure-og-approval.mjs && node --check scripts/check-og-wallet.mjs",
+    "og:approve": "node --env-file=.env scripts/ensure-og-approval.mjs",
+    "og:wallet": "node --env-file=.env scripts/check-og-wallet.mjs"
   },
   "engines": {
     "node": ">=22.0.0"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.101.0",
-    "@x402/evm": "^2.8.0",
-    "@x402/fetch": "^2.8.0",
-    "viem": "^2.47.6"
+    "@supabase/supabase-js": "^2.101.0"
   }
 }

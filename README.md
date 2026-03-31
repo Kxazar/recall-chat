@@ -1,32 +1,34 @@
 # Gradient Recall
 
-Gradient Recall is a lightweight demo project built from the OpenGradient docs. It keeps OpenGradient as the verified LLM provider and uses Supabase as the cloud memory layer.
+Gradient Recall is a lightweight demo project built from the OpenGradient docs. It keeps OpenGradient as the verified LLM provider, now through the official Python SDK bridge, and uses Supabase as the cloud memory layer.
 
 ## Why this architecture
 
 - OpenGradient handles paid, TEE-verified inference over x402.
-- Supabase gives us a cheap cloud database with a generous free tier and a simple JavaScript client.
+- The Node app calls the official Python SDK, which currently works more reliably than the stale JS hostname path.
+- Supabase gives us a cheap cloud database with a generous free tier and a simple server-side client.
 - This keeps the core OpenGradient flow intact while replacing the paid MemSync dependency with a cloud store you control.
 
 ## What it does
 
-- Sends chat requests to `OpenGradient` via x402
+- Sends chat requests to `OpenGradient` through the official Python SDK
 - Stores conversation turns in `Supabase`
 - Recalls relevant recent context from Supabase before each reply
 - Shows cloud-memory status, usage hints, and recalled context in a small local UI
 
 ## Prerequisites
 
-1. Node.js 24 or newer
-2. A Base Sepolia wallet private key
-3. Base Sepolia ETH for gas
-4. `$OPG` testnet tokens from the OpenGradient faucet
-5. A Supabase project
+1. Node.js 22 or newer
+2. Python 3.11 or newer
+3. A Base Sepolia wallet private key
+4. Base Sepolia ETH for gas
+5. `$OPG` testnet tokens from the OpenGradient faucet
+6. A Supabase project
 
 Useful docs:
 
 - [OpenGradient x402 overview](https://docs.opengradient.ai/developers/x402/)
-- [OpenGradient x402 examples](https://docs.opengradient.ai/developers/x402/examples.html)
+- [OpenGradient Python SDK](https://pypi.org/project/opengradient/)
 - [Supabase JavaScript client](https://supabase.com/docs/reference/javascript/initializing)
 - [Supabase API keys](https://supabase.com/docs/guides/api/api-keys)
 
@@ -38,40 +40,59 @@ Useful docs:
    npm.cmd install
    ```
 
-2. Create a Supabase project.
+2. Create a local Python environment for the OpenGradient bridge:
 
-3. Open the Supabase SQL Editor and run the schema from [supabase/schema.sql](/C:/Users/alexe/Downloads/OpenGradient/supabase/schema.sql).
+   ```powershell
+   py -3.11 -m venv .venv-og
+   .\.venv-og\Scripts\python.exe -m pip install --upgrade pip
+   .\.venv-og\Scripts\python.exe -m pip install opengradient==0.9.3
+   ```
 
-4. Copy your credentials from Supabase:
+3. Create a Supabase project.
+
+4. Open the Supabase SQL Editor and run the schema from [supabase/schema.sql](/C:/Users/alexe/Downloads/OpenGradient/supabase/schema.sql).
+
+5. Copy your credentials from Supabase:
 
    - `Project URL`
    - `secret` key or `service_role` key from `Settings > API Keys`
 
-5. Create a local env file:
+6. Create a local env file:
 
    ```powershell
    Copy-Item .env.example .env
    ```
 
-6. Fill in `.env`:
+7. Fill in `.env`:
 
    - `OG_PRIVATE_KEY`: private key for the Base Sepolia wallet that will pay for inference
-   - `OG_MODEL`: supported OpenGradient model such as `openai/gpt-4o`
+   - `OG_MODEL`: supported OpenGradient model such as `anthropic/claude-haiku-4-5` or `openai/gpt-5-mini`
    - `OG_SETTLEMENT_TYPE`: `individual`, `batch`, or `private`
-   - `OG_API_BASE_URL`: defaults to `https://llm.opengradient.ai`
+   - `OG_RPC_URL`: defaults to `https://ogevmdevnet.opengradient.ai`
+   - `OG_TEE_REGISTRY_ADDRESS`: defaults to the current OpenGradient LLM registry contract
+   - `OG_LLM_SERVER_URL`: optional explicit TEE URL override; leave empty to use registry discovery
+   - `OG_PYTHON_EXECUTABLE`: optional override if you are not using `.venv-og`
    - `SUPABASE_URL`: your Supabase project URL
    - `SUPABASE_SECRET_KEY`: preferred server-side secret key
    - `SUPABASE_SERVICE_ROLE_KEY`: optional fallback if you are using the legacy service-role key instead
    - `SUPABASE_USER_ID`: logical user namespace for saved memories
    - `SUPABASE_MEMORY_TABLE`: defaults to `gradient_memories`
 
-7. Start the app:
+8. Run the one-time OPG approval check:
+
+   ```powershell
+   npm.cmd run og:approve -- 1
+   ```
+
+   This only sends a transaction if your Permit2 allowance is still too low. Using `1 OPG` is a safer headroom than `0.1` for repeated tests.
+
+9. Start the app:
 
    ```powershell
    npm.cmd run dev
    ```
 
-8. Open [http://localhost:3000](http://localhost:3000)
+10. Open [http://localhost:3000](http://localhost:3000)
 
 ## Project structure
 
@@ -80,6 +101,9 @@ public/
   app.js
   index.html
   styles.css
+scripts/
+  ensure-og-approval.mjs
+  opengradient_bridge.py
 src/
   lib/
     opengradient.js
@@ -92,8 +116,11 @@ supabase/
 ## Notes
 
 - OpenGradient remains the LLM provider in this project.
+- The Node server talks to OpenGradient through the official Python SDK bridge.
 - Supabase is only used for cloud memory storage and recall.
 - Supabase keys in this demo are server-side only. Do not expose `SUPABASE_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY` in frontend code.
+- If your older env still says `openai/gpt-4o`, the app will transparently map it to `openai/gpt-5-mini`.
+- If you hit `402 Payment Required`, run `npm.cmd run og:wallet` first. The most common cause is simply not having enough `OPG` left on Base Sepolia.
 
 ## Good next steps
 
