@@ -97,8 +97,7 @@ body::before {
   display: grid;
   gap: 16px;
   align-content: start;
-  position: relative;
-  z-index: 2;
+  margin-left: -10px;
 }
 
 .sidebar-block,
@@ -276,8 +275,6 @@ button[type="submit"]:disabled {
   border-color: var(--line-dark);
   box-shadow: var(--shadow-dark);
   backdrop-filter: blur(18px);
-  position: relative;
-  z-index: 1;
 }
 
 .chat-header {
@@ -426,6 +423,10 @@ button[type="submit"] {
     gap: 24px;
   }
 
+  .sidebar {
+    margin-left: -6px;
+  }
+
   .chat-header {
     flex-direction: column;
   }
@@ -439,6 +440,10 @@ button[type="submit"] {
   .app-shell {
     grid-template-columns: 1fr;
     min-height: auto;
+  }
+
+  .sidebar {
+    margin-left: 0;
   }
 
   .chat-log {
