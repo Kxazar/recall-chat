@@ -53,18 +53,25 @@ export function createOpenGradientClient({
 
   return {
     async chat(messages) {
-      const response = await x402Fetch(`${baseUrl.replace(/\/$/, "")}/v1/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-SETTLEMENT-TYPE": settlementType
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          max_tokens: maxTokens
-        })
-      });
+      let response;
+
+      try {
+        response = await x402Fetch(`${baseUrl.replace(/\/$/, "")}/v1/chat/completions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-SETTLEMENT-TYPE": settlementType
+          },
+          body: JSON.stringify({
+            model,
+            messages,
+            max_tokens: maxTokens
+          })
+        });
+      } catch (error) {
+        const details = error?.cause?.message || error?.message || "Unknown network error.";
+        throw new Error(`OpenGradient network error: ${details}`);
+      }
 
       const payload = await response.json().catch(() => null);
 
